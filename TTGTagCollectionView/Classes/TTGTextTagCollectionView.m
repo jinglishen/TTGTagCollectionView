@@ -147,7 +147,7 @@
     if (self) {
         [self commonInit];
     }
-
+    
     return self;
 }
 
@@ -156,7 +156,7 @@
     if (self) {
         [self commonInit];
     }
-
+    
     return self;
 }
 
@@ -164,12 +164,12 @@
     if (_tagCollectionView) {
         return;
     }
-
+    
     _enableTagSelection = YES;
     _tagLabels = [NSMutableArray new];
-
+    
     _defaultConfig = [TTGTextTagConfig new];
-
+    
     _tagCollectionView = [[TTGTagCollectionView alloc] initWithFrame:self.bounds];
     _tagCollectionView.delegate = self;
     _tagCollectionView.dataSource = self;
@@ -261,7 +261,7 @@
     if (![tag isKindOfClass:[NSString class]] || tag.length == 0) {
         return;
     }
-
+    
     NSMutableArray *labelsToRemoved = [NSMutableArray new];
     for (TTGTextTagLabel *label in _tagLabels) {
         if ([label.label.text isEqualToString:tag]) {
@@ -276,7 +276,7 @@
     if (index >= _tagLabels.count) {
         return;
     }
-
+    
     [_tagLabels removeObjectAtIndex:index];
     [self reload];
 }
@@ -290,7 +290,7 @@
     if (index >= _tagLabels.count) {
         return;
     }
-
+    
     _tagLabels[index].selected = selected;
     [self reload];
 }
@@ -359,35 +359,35 @@
 
 - (NSArray <NSString *> *)allTags {
     NSMutableArray *allTags = [NSMutableArray new];
-
+    
     for (TTGTextTagLabel *label in _tagLabels) {
         [allTags addObject:[label.label.text copy]];
     }
-
+    
     return [allTags copy];
 }
 
 - (NSArray <NSString *> *)allSelectedTags {
     NSMutableArray *allTags = [NSMutableArray new];
-
+    
     for (TTGTextTagLabel *label in _tagLabels) {
         if (label.selected) {
             [allTags addObject:[label.label.text copy]];
         }
     }
-
+    
     return [allTags copy];
 }
 
 - (NSArray <NSString *> *)allNotSelectedTags {
     NSMutableArray *allTags = [NSMutableArray new];
-
+    
     for (TTGTextTagLabel *label in _tagLabels) {
         if (!label.selected) {
             [allTags addObject:[label.label.text copy]];
         }
     }
-
+    
     return [allTags copy];
 }
 
@@ -428,13 +428,17 @@
     if (_enableTagSelection) {
         TTGTextTagLabel *label = _tagLabels[index];
         
-        if (!label.selected && _selectionLimit > 0 && [self allSelectedTags].count + 1 > _selectionLimit) {
+        if (_selectionLimit == 1 && [self allSelectedTags].count + 1 > _selectionLimit) {
+            for (TTGTextTagLabel *otherLabel in _tagLabels) {
+                otherLabel.selected = otherLabel == label ? YES : NO;
+            }
+        } else if (!label.selected && _selectionLimit > 0 && [self allSelectedTags].count + 1 > _selectionLimit) {
             return;
+        } else {
+            label.selected = !label.selected;
         }
         
-        label.selected = !label.selected;
-        
-        if (self.alignment == TTGTagCollectionAlignmentFillByExpandingWidth) {
+        if (self.alignment == TTGTagCollectionAlignmentFillByExpandingWidth || self.selectionLimit == 1) {
             [self reload];
         } else {
             [self updateStyleAndFrameForLabel:label];
@@ -596,3 +600,4 @@
 }
 
 @end
+
